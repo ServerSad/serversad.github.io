@@ -957,164 +957,103 @@ MainTab:AddButton({
     });
   </script>
 <script>
-    // Tab switching functionality
-    function switchTab(tabId) {
-      // Hide all tab contents
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      
-      // Show selected tab content
-      document.getElementById(tabId).classList.add('active');
-      
-      // Update active tab button
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      // Find and activate the corresponding tab button
-      const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`);
-      if (activeBtn) {
-        activeBtn.classList.add('active');
+// Editor functions
+let models = [
+  { name: "Exemplo", path: "modelos/Exemplo.lua" }
+];
+let selectedModel = null;
+
+function copyCode() {
+  const editor = document.getElementById('serverui-editor');
+  navigator.clipboard.writeText(editor.value).then(() => {
+    alert('Código copiado para a área de transferência!');
+  });
+}
+
+function clearEditor() {
+  if (confirm('Tem certeza que deseja limpar o editor?')) {
+    document.getElementById('serverui-editor').value = '';
+  }
+}
+
+function loadModels() {
+  const selector = document.getElementById('model-selector');
+  selector.innerHTML = '<option value="">Selecione um modelo...</option>';
+
+  models.forEach(model => {
+    const option = document.createElement('option');
+    option.value = model.name;
+    option.textContent = model.name;
+    selector.appendChild(option);
+  });
+
+  if (models.length > 0) {
+    alert(models.length + ' modelo carregado com sucesso!');
+  } else {
+    alert('Nenhum modelo encontrado.');
+  }
+}
+
+function loadSelectedModel() {
+  const selector = document.getElementById('model-selector');
+  const modelName = selector.value;
+
+  if (!modelName) {
+    document.getElementById('model-container').style.display = 'none';
+    selectedModel = null;
+    return;
+  }
+
+  const model = models.find(m => m.name === modelName);
+  if (!model) return;
+
+  selectedModel = model;
+
+  fetch(model.path)
+    .then(response => response.text())
+    .then(code => {
+      const lines = code.split('\n');
+      let description = '';
+
+      for (const line of lines) {
+        if (line.trim().startsWith('--')) {
+          description += line.replace('--', '').trim() + '\n';
+        } else if (line.trim() === '') {
+          continue;
+        } else {
+          break;
+        }
       }
-    }
-    
-    // Add copy buttons to all code blocks
-    document.querySelectorAll('pre code').forEach((block) => {
-      const pre = block.parentElement;
-      const button = document.createElement('button');
-      button.className = 'copy-btn';
-      button.innerHTML = '<i class="far fa-copy"></i> Copiar';
-      button.addEventListener('click', () => {
-        navigator.clipboard.writeText(block.textContent).then(() => {
-          button.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-          setTimeout(() => {
-            button.innerHTML = '<i class="far fa-copy"></i> Copiar';
-          }, 2000);
-        });
-      });
-      pre.appendChild(button);
+
+      document.getElementById('model-name').textContent = model.name;
+      document.getElementById('model-description').textContent = description || 'Nenhuma descrição fornecida.';
+      document.getElementById('model-container').style.display = 'block';
+    })
+    .catch(error => {
+      console.error('Erro ao carregar modelo:', error);
+      alert('Erro ao carregar o modelo selecionado.');
     });
+}
 
-    // Editor functions
-    let models = [];
-    let selectedModel = null;
+function insertSelectedModel() {
+  if (!selectedModel) {
+    alert('Nenhum modelo selecionado!');
+    return;
+  }
 
-    function copyCode() {
-      const editor = document.getElementById('serverui-editor');
-      navigator.clipboard.writeText(editor.value).then(() => {
-        alert('Código copiado para a área de transferência!');
-      });
-    }
+  fetch(selectedModel.path)
+    .then(response => response.text())
+    .then(code => {
+      document.getElementById('serverui-editor').value = code;
+      alert('Modelo "' + selectedModel.name + '" inserido com sucesso!');
+    })
+    .catch(error => {
+      console.error('Erro ao carregar modelo:', error);
+      alert('Erro ao carregar o modelo selecionado.');
+    });
+}
 
-    function clearEditor() {
-      if (confirm('Tem certeza que deseja limpar o editor?')) {
-        document.getElementById('serverui-editor').value = '';
-      }
-    }
-
-    function loadModels() {
-      fetch('modelos/')
-        .then(response => response.text())
-        .then(data => {
-          // Parse the directory listing
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(data, 'text/html');
-          const links = htmlDoc.querySelectorAll('a');
-          
-          models = [];
-          const selector = document.getElementById('model-selector');
-          selector.innerHTML = '<option value="">Selecione um modelo...</option>';
-          
-          links.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href.endsWith('.lua')) {
-              const modelName = href.replace('.lua', '');
-              models.push({
-                name: modelName,
-                path: 'modelos/' + href
-              });
-              
-              const option = document.createElement('option');
-              option.value = modelName;
-              option.textContent = modelName;
-              selector.appendChild(option);
-            }
-          });
-          
-          if (models.length === 0) {
-            alert('Nenhum modelo encontrado na pasta "modelos". Crie arquivos .lua na pasta modelos para aparecerem aqui.');
-          } else {
-            alert(`${models.length} modelos carregados com sucesso!`);
-          }
-        })
-        .catch(error => {
-          console.error('Erro ao carregar modelos:', error);
-          alert('Erro ao carregar modelos. Verifique se a pasta "modelos" existe no mesmo diretório deste arquivo HTML.');
-        });
-    }
-
-    function loadSelectedModel() {
-      const selector = document.getElementById('model-selector');
-      const modelName = selector.value;
-      
-      if (!modelName) {
-        document.getElementById('model-container').style.display = 'none';
-        selectedModel = null;
-        return;
-      }
-      
-      const model = models.find(m => m.name === modelName);
-      if (!model) return;
-      
-      selectedModel = model;
-      
-      fetch(model.path)
-        .then(response => response.text())
-        .then(code => {
-          // Extract description from comments (first few lines starting with --)
-          const lines = code.split('\n');
-          let description = '';
-          
-          for (const line of lines) {
-            if (line.trim().startsWith('--')) {
-              description += line.replace('--', '').trim() + '\n';
-            } else if (line.trim() === '') {
-              continue;
-            } else {
-              break;
-            }
-          }
-          
-          document.getElementById('model-name').textContent = model.name;
-          document.getElementById('model-description').textContent = description || 'Nenhuma descrição fornecida.';
-          document.getElementById('model-container').style.display = 'block';
-        })
-        .catch(error => {
-          console.error('Erro ao carregar modelo:', error);
-          alert('Erro ao carregar o modelo selecionado.');
-        });
-    }
-
-    function insertSelectedModel() {
-      if (!selectedModel) {
-        alert('Nenhum modelo selecionado!');
-        return;
-      }
-      
-      fetch(selectedModel.path)
-        .then(response => response.text())
-        .then(code => {
-          document.getElementById('serverui-editor').value = code;
-          alert(`Modelo "${selectedModel.name}" inserido com sucesso!`);
-        })
-        .catch(error => {
-          console.error('Erro ao carregar modelo:', error);
-          alert('Erro ao carregar o modelo selecionado.');
-        });
-    }
-
-    // Initialize with getting-started tab active
-    switchTab('getting-started');
-  </script></body>
+// Initialize with getting-started tab active
+switchTab('getting-started');
+</script></body>
 </html>
