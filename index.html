@@ -151,6 +151,20 @@
     }
     
     .copy-btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transition: background 0.3s ease;
+}
       position: absolute;
       top: 10px;
       right: 10px;
@@ -346,6 +360,20 @@
     }
     
     .copy-btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transition: background 0.3s ease;
+}
       position: absolute;
       top: 10px;
       right: 10px;
@@ -846,22 +874,10 @@ ServerUi:Init()</code></pre>
 <button class="editor-btn secondary" onclick="clearEditor()">
 <i class="fas fa-trash-alt"></i> Limpar
           </button>
-<button class="editor-btn" onclick="loadModels()">
-<i class="fas fa-sync-alt"></i> Carregar Modelos
-          </button>
-</div>
-<select class="model-selector" id="model-selector" onchange="loadSelectedModel()">
-<option value="">Selecione um modelo...</option>
-</select>
-<div class="model-container" id="model-container">
-<div class="model-info" id="model-info">
-<h3 id="model-name"></h3>
-<p id="model-description"></p>
-</div>
-<button class="editor-btn" onclick="insertSelectedModel()">
-<i class="fas fa-file-import"></i> Inserir Modelo Selecionado
-          </button>
-</div>
+
+<button class="editor-btn" onclick="carregarExemplo()">📄 Carregar Exemplo</button></div>
+
+
 <textarea class="code-editor" id="serverui-editor" spellcheck="false">-- Cole seu código ServerUi aqui
 -- Exemplo básico:
 
@@ -957,12 +973,6 @@ MainTab:AddButton({
     });
   </script>
 <script>
-// Editor functions
-let models = [
-  { name: "Exemplo", path: "modelos/Exemplo.lua" }
-];
-let selectedModel = null;
-
 function copyCode() {
   const editor = document.getElementById('serverui-editor');
   navigator.clipboard.writeText(editor.value).then(() => {
@@ -976,84 +986,147 @@ function clearEditor() {
   }
 }
 
-function loadModels() {
-  const selector = document.getElementById('model-selector');
-  selector.innerHTML = '<option value="">Selecione um modelo...</option>';
+function carregarExemplo() {
+  document.getElementById('serverui-editor').value = `-- Inicialização da biblioteca
+local ServerUi = loadstring(game:HttpGet("https://raw.githubusercontent.com/ServerSad/UiLib/refs/heads/main/Lib/uilib.lua"))()
 
-  models.forEach(model => {
-    const option = document.createElement('option');
-    option.value = model.name;
-    option.textContent = model.name;
-    selector.appendChild(option);
-  });
+-- Configuração de cargos
+ServerUi:MakeRoles({
+    Especial = {
+        Color = "#FFFF00",
+        Users = {11223344, "SeuNome", "NomeDoMeuAmigo"}
+    },
+    User = {
+        Color = "#00FF00",
+        Users = "everyone"
+    }
+})
 
-  if (models.length > 0) {
-    alert(models.length + ' modelo carregado com sucesso!');
-  } else {
-    alert('Nenhum modelo encontrado.');
-  }
+-- Criação da janela principal
+local Window = ServerUi:MakeWindow({
+    Name = "Interface Completa",
+    SaveConfig = true,
+    ConfigFolder = "ConfigDoPlayer",
+    IntroText = "Carregando sua GUI...",
+    IntroEnabled = true,
+    ShowIcon = true,
+    Icon = "rbxassetid://14229447778",
+    IntroIcon = "rbxassetid://14229447778",
+    SearchBar = {
+        Default = "🔍 Buscar...",
+        ClearTextOnFocus = true
+    }
+})
+
+-- Aba principal (acessível a todos)
+local Tab = Window:MakeTab({
+    Name = "Principal",
+    Icon = "rbxassetid://4483345998",
+    RequiredRole = "AllRoles"
+})
+
+-- Aba especial (só para usuários com cargo "Especial")
+local Tab2 = Window:MakeTab({
+    Name = "Tab Especial",
+    Icon = "rbxassetid://4483345998",
+    RequiredRole = "Especial"
+})
+
+-- Notificação de boas-vindas
+ServerUi:MakeNotification({
+    Name = "Bem vindo!",
+    Content = "Sua interface foi carregada com sucesso!",
+    Time = 3
+})
+
+-- Componentes na aba principal --
+
+-- Toggle (Interruptor)
+Tab:AddToggle({
+    Name = "Modo Hardcore",
+    Default = false,
+    Flag = "modoHardcore",
+    Save = true,
+    Callback = function(state)
+        print("Modo Hardcore está:", state)
+    end
+})
+
+-- Botão com notificação
+Tab:AddButton({
+    Name = "Clique aqui!",
+    Callback = function()
+        ServerUi:MakeNotification({
+            Name = "Sucesso!",
+            Content = "Você clicou no botão.",
+            Time = 3
+        })
+    end
+})
+
+-- Slider (Controle deslizante)
+Tab:AddSlider({
+    Name = "Volume",
+    Min = 0,
+    Max = 100,
+    Default = 50,
+    Increment = 5,
+    ValueName = "%",
+    Flag = "volumeUser",
+    Save = true,
+    Callback = function(val)
+        print("Volume:", val)
+    end
+})
+
+-- Dropdown (Seleção de opções)
+Tab:AddDropdown({
+    Name = "Escolha sua cor favorita",
+    Options = {"Vermelho", "Verde", "Azul", "Amarelo"},
+    Default = "Vermelho",
+    Flag = "corFavorita",
+    Save = true,
+    Callback = function(opt)
+        print("Cor escolhida:", opt)
+    end
+})
+
+-- Keybind (Atalho de tecla)
+Tab:AddBind({
+    Name = "Atalho para Ação",
+    Default = Enum.KeyCode.G,
+    Hold = false,
+    Callback = function()
+        print("Atalho ativado!")
+    end
+})
+
+-- Campo de texto
+Tab:AddTextbox({
+    Name = "Digite algo",
+    Default = "",
+    TextDisappear = true,
+    Callback = function(txt)
+        print("Você digitou:", txt)
+    end
+})
+
+-- Texto informativo
+Tab:AddLabel("Este é um rótulo fixo de informação")
+
+-- Parágrafo explicativo
+Tab:AddParagraph("Aviso", "Este é um parágrafo com mais texto.\nVocê pode mostrar explicações, regras ou tutoriais aqui.")
+
+-- Componentes na aba especial --
+
+-- Log de sistema
+Tab2:AddLog("Log do sistema iniciado com sucesso.")
+
+-- Finalização e salvamento
+ServerUi:Init()`;
+  alert("Exemplo carregado com sucesso!");
 }
 
-function loadSelectedModel() {
-  const selector = document.getElementById('model-selector');
-  const modelName = selector.value;
-
-  if (!modelName) {
-    document.getElementById('model-container').style.display = 'none';
-    selectedModel = null;
-    return;
-  }
-
-  const model = models.find(m => m.name === modelName);
-  if (!model) return;
-
-  selectedModel = model;
-
-  fetch(model.path)
-    .then(response => response.text())
-    .then(code => {
-      const lines = code.split('\n');
-      let description = '';
-
-      for (const line of lines) {
-        if (line.trim().startsWith('--')) {
-          description += line.replace('--', '').trim() + '\n';
-        } else if (line.trim() === '') {
-          continue;
-        } else {
-          break;
-        }
-      }
-
-      document.getElementById('model-name').textContent = model.name;
-      document.getElementById('model-description').textContent = description || 'Nenhuma descrição fornecida.';
-      document.getElementById('model-container').style.display = 'block';
-    })
-    .catch(error => {
-      console.error('Erro ao carregar modelo:', error);
-      alert('Erro ao carregar o modelo selecionado.');
-    });
-}
-
-function insertSelectedModel() {
-  if (!selectedModel) {
-    alert('Nenhum modelo selecionado!');
-    return;
-  }
-
-  fetch(selectedModel.path)
-    .then(response => response.text())
-    .then(code => {
-      document.getElementById('serverui-editor').value = code;
-      alert('Modelo "' + selectedModel.name + '" inserido com sucesso!');
-    })
-    .catch(error => {
-      console.error('Erro ao carregar modelo:', error);
-      alert('Erro ao carregar o modelo selecionado.');
-    });
-}
-
-// Initialize with getting-started tab active
 switchTab('getting-started');
 </script></body>
 </html>
