@@ -554,17 +554,32 @@
 <div class="doc-section">
 <h2><i class="fas fa-window-maximize"></i> Criando a Janela Principal</h2>
 <pre><code class="language-lua">local Window = ServerUi:MakeWindow({
-    Name = "Título da GUI",
+    Name = "Minha GUI",
     SaveConfig = true,
-    ConfigFolder = "NomeDaPasta",
-    IntroText = "Texto de boas-vindas",
+    ConfigFolder = "MinhaPasta",
+    IntroText = "Bem-vindo!",
     IntroEnabled = true,
     ShowIcon = true,
-    Icon = "rbxassetid://IMAGEM",
-    IntroIcon = "rbxassetid://IMAGEM",
+    Icon = "rbxassetid://12345678",
+    IntroIcon = "rbxassetid://12345678",
     SearchBar = {
         Default = "🔍 Procurar...",
         ClearTextOnFocus = true
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "🔐 Acesso Restrito",
+        Subtitle = "Digite sua chave para continuar",
+        LoadingTitle = "Carregando",
+        LoadingSubtitle = "...",
+        Author = "ServerSadzz",
+        Textbox = "Insira aqui a key...",
+        Button = "Confirmar",
+		KeyButton = "keyzona",
+        Note = "Pegue a key clicando no icone de chave na direita!",
+        FileName = "MinhaKey.txt",
+        SaveKey = false,
+        Key = {"keyzona"}
     }
 })</code></pre>
 <p><strong>Explicações:</strong></p>
