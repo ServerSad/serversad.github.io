@@ -1029,19 +1029,33 @@ ServerUi:MakeRoles({
     }
 })
 
--- Criação da janela principal
 local Window = ServerUi:MakeWindow({
-    Name = "Interface Completa",
+    Name = "Minha GUI",
     SaveConfig = true,
-    ConfigFolder = "ConfigDoPlayer",
-    IntroText = "Carregando sua GUI...",
+    ConfigFolder = "MinhaPasta",
+    IntroText = "Bem-vindo!",
     IntroEnabled = true,
     ShowIcon = true,
-    Icon = "rbxassetid://14229447778",
-    IntroIcon = "rbxassetid://14229447778",
+    Icon = "rbxassetid://12345678",
+    IntroIcon = "rbxassetid://12345678",
     SearchBar = {
-        Default = "🔍 Buscar...",
+        Default = "🔍 Procurar...",
         ClearTextOnFocus = true
+    },
+    KeySystem = true,
+    KeySettings = {
+        Title = "🔐 Key System",
+        Subtitle = "Digite sua chave para continuar",
+        LoadingTitle = "Carregando",
+        LoadingSubtitle = "...",
+        Author = "ServerUI",
+        Textbox = "Insira aqui a key...",
+        Button = "Confirmar",
+	KeyButton = "SeuLink",
+        Note = "Pegue a key clicando no icone de chave na direita!",
+        FileName = "MinhaKey.txt",
+        SaveKey = false,
+        Key = {"KeyTeste"}
     }
 })
 
